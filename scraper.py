@@ -65,27 +65,26 @@ class LinkedinScraper():
           content_btn.click()
         except:
           print("INFO: Contents tab already expanded")
-        chapters = bot.driver.find_elements_by_css_selector('[data-control-name="chapter_contents_toggle"]')
-        chaptersText = bot.driver.find_elements_by_css_selector('[data-control-name="chapter_contents_toggle"] h3')
-        [c.click() for c in chapters]
-        for idx, text in enumerate(chaptersText, 1):
-            self.chapters.append(
-                f"{idx}. {text.get_attribute('innerText').lstrip('0123456789.- ')}")
+        chapters = self.driver.find_elements_by_class_name("classroom-toc-chapter")
+        for idx, chap in enumerate(chapters, 1):
+            chap.find_element_by_css_selector("button").click()
+            chapter = {
+              'id': idx,
+              'title': chap.find_element_by_css_selector("h3").get_attribute('innerText').lstrip('0123456789.- '),
+              'links': [a.get_attribute('href') for a in chap.find_elements_by_css_selector("a")]
+            }
+            self.chapters.append(chapter)
 
     def dump(self):
         print([c for c in self.chapters])
 
 
-try:
-  config = ConfigJson()
-  config.loadConfig()
-  bot = LinkedinScraper()
-  bot.clearCache()
-  bot.login(config.email, config.password)
-  bot.get("https://www.linkedin.com/learning/programming-foundations-algorithms/")
-  bot.scrape()
-  bot.dump()
-except Exception as err:
-  print("An exception has occured: ")
-  print(err)
 
+config = ConfigJson()
+config.loadConfig()
+bot = LinkedinScraper()
+bot.clearCache()
+bot.login(config.email, config.password)
+bot.get("https://www.linkedin.com/learning/programming-foundations-algorithms/")
+bot.scrape()
+bot.dump()
