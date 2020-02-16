@@ -22,11 +22,6 @@ class ConfigJson():
         print("Email: ", self.email)
         print("Password: ", self.password)
 
-
-config = ConfigJson()
-config.loadConfig()
-
-
 class LinkedinScraper():
     def __init__(self):
         options = Options()
@@ -49,6 +44,7 @@ class LinkedinScraper():
         print("\nCache clean")
 
     def login(self, email, password):
+        print("INFO: Logging in")
         self.driver.get("https://www.linkedin.com/learning-login/")
         sleep(5)
         email_input = self.driver.find_element_by_xpath('//*[@id="auth-id-input"]')
@@ -63,13 +59,14 @@ class LinkedinScraper():
 
 
     def scrape(self):
-        content_btn = bot.driver.find_element_by_class_name(
-            'classroom-nav__sidebar-toggle')
-        content_btn.click()
-        chapters = bot.driver.find_elements_by_css_selector(
-            '[data-control-name="chapter_contents_toggle"]')
-        chaptersText = bot.driver.find_elements_by_css_selector(
-            '[data-control-name="chapter_contents_toggle"] h3')
+        try:
+          print("INFO: Trying to expand contents tab")
+          content_btn = bot.driver.find_element_by_class_name('classroom-nav__sidebar-toggle')
+          content_btn.click()
+        except:
+          print("INFO: Contents tab already expanded")
+        chapters = bot.driver.find_elements_by_css_selector('[data-control-name="chapter_contents_toggle"]')
+        chaptersText = bot.driver.find_elements_by_css_selector('[data-control-name="chapter_contents_toggle"] h3')
         [c.click() for c in chapters]
         for idx, text in enumerate(chaptersText, 1):
             self.chapters.append(
@@ -80,12 +77,15 @@ class LinkedinScraper():
 
 
 try:
+  config = ConfigJson()
+  config.loadConfig()
   bot = LinkedinScraper()
   bot.clearCache()
-except:
-  pass
+  bot.login(config.email, config.password)
+  bot.get("https://www.linkedin.com/learning/programming-foundations-algorithms/")
+  bot.scrape()
+  bot.dump()
+except Exception as err:
+  print("An exception has occured: ")
+  print(err)
 
-# bot.login(config.email, config.password)
-# bot.get("https://www.linkedin.com/learning/programming-foundations-algorithms/")
-# bot.scrape()
-# bot.dump()
